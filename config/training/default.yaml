@@ -1,3 +1,4 @@
+# @package _global_
 training:
   base_path: 'E:\datasets'
   epochs: 50

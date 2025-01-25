@@ -46,4 +46,4 @@ def loss_function(loss_func, preds, label_en, targets, temperature=1, beta=0.5):
 
     # plot_on_unit_circle(preds, label_en, labels, predicted_labels)
 
-    return loss, predicted_labels, preds
+    return loss, predicted_labels, targets

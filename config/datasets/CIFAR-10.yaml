@@ -1,1 +1,4 @@
 # @package _global_
+datasets:
+  name: CIFAR-10
+

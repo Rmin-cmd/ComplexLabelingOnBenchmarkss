@@ -82,50 +82,57 @@ class TrainTestData:
         if self.dataset_name == 'CIFAR-10':
 
             train_dataset = datasets.CIFAR10(root=os.path.join(base_path, 'data'), train=True, download=download,
-                                             transform=self.transform)
+                                             transform=self.transform())
             test_dataset = datasets.CIFAR10(root=os.path.join(base_path, 'data'), train=False, download=download,
-                                            transform=self.transform)
+                                            transform=self.transform())
+            classnames = train_dataset.classes
 
         elif self.dataset_name == 'CIFAR-100':
 
             train_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=True, download=download,
-                                              transform=self.transform)
+                                              transform=self.transform())
             test_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=False, download=download,
-                                             transform=self.transform)
+                                             transform=self.transform())
+            classnames = train_dataset.classes
 
         elif self.dataset_name == 'SVHN':
 
             train_dataset = datasets.SVHN(root=os.path.join(base_path, 'data_svhn'), split='train', download=download,
-                                          transform=self.transform)
+                                          transform=self.transform())
             test_dataset = datasets.SVHN(root=os.path.join(base_path, 'data_svhn'), split='test', download=download,
-                                         transform=self.transform)
+                                         transform=self.transform())
+            classnames = [str(i) for i in range(10)]
 
         elif self.dataset_name == 'STL-10':
 
             train_dataset = datasets.STL10(root=os.path.join(base_path, 'data_STL10'), split='train', download=download,
-                                           transform=self.transform)
+                                           transform=self.transform())
             test_dataset = datasets.STL10(root=os.path.join(base_path, 'data_STL10'), split='test', download=download,
-                                          transform=self.transform)
+                                          transform=self.transform())
+
+            classnames = train_dataset.classes
 
         elif self.dataset_name == 'tiny_imagenet':
 
-            train_dataset = datasets.ImageFolder('tiny-imagenet-200/train', transform=self.transform)
-            test_dataset = datasets.ImageFolder('tiny-imagenet-200/test', transform=self.transform)
+            train_dataset = datasets.ImageFolder('tiny-imagenet-200/train', transform=self.transform())
+            test_dataset = datasets.ImageFolder('tiny-imagenet-200/test', transform=self.transform())
 
         elif self.dataset_name == 'permuted_CIFAR-100':
 
             train_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=True, download=download,
-                                              transform=self.transform)
+                                              transform=self.transform())
             test_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=False, download=download,
-                                             transform=self.transform)
+                                             transform=self.transform())
+
+            classnames = train_dataset.classes
 
             permute_train_data, permute_train_targets = permute_dataset(train_dataset)
             permute_test_data, permute_test_targets = permute_dataset(test_dataset)
 
-            train_dataset = PermutedDataset(permute_train_data, permute_train_targets, transform=self.transform)
-            test_dataset = PermutedDataset(permute_test_data, permute_test_targets, transform=self.transform)
+            train_dataset = PermutedDataset(permute_train_data, permute_train_targets, transform=self.transform())
+            test_dataset = PermutedDataset(permute_test_data, permute_test_targets, transform=self.transform())
 
         elif self.dataset_name == 'clothing':
             pass
 
-        return train_dataset, test_dataset
+        return train_dataset, test_dataset, classnames

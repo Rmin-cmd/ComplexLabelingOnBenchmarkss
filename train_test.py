@@ -63,7 +63,7 @@ class TrainTestPipeline:
                 test_loss += loss
                 # total_correct += torch.sum(predicted_label == target.data).item()
 
-                pred_ += preds
+                pred_ += predicted_label.tolist()
                 label_ += targets.tolist()
 
             return test_loss/len(test_loader), pred_, label_
