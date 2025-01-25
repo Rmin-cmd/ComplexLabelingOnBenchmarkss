@@ -9,6 +9,10 @@ class ColorModelConverter:
 
         self.device = device
 
+    def convert(self, img):
+
+        return complextorch.CVTensor(r=img.real, i=img.imag).to(self.device), self.target.to(self.device)
+
     def convert_hsv_ihsv(self, inp:Tensor, target:Tensor) -> (Tensor, Tensor):
 
         h, s, v = inp.unbind(dim=1)
@@ -27,7 +31,7 @@ class ColorModelConverter:
 
         return input, target
 
-    def convert_rgb_irgb(self, inp:Tensor, target:Tensor, device) -> (Tensor, Tensor):
+    def convert_rgb_irgb(self, inp:Tensor, target:Tensor) -> (Tensor, Tensor):
 
         r, g, b = inp.unbind(dim=1)
 
@@ -56,12 +60,6 @@ class ColorModelConverter:
         self.target = target
 
         input, target = self.convert(ilab)
-
-        return input, target
-
-    def convert(self, img):
-
-        input, target = complextorch.CVTensor(r=img.real, i=img.imag).to(self.device), self.target.to(self.device)
 
         return input, target
 

@@ -1,4 +1,3 @@
 defaults:
-  - models: models
   - datasets: CIFAR-10
   - training: default

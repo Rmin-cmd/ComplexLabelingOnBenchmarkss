@@ -1,16 +1,20 @@
 import complextorch.nn as compnn
 import torch.nn as nn
-from utils import ComplexBatchNorm2d
+from utils.batch_norm import ComplexBatchNorm2d
+
 
 class ComplexNet(nn.Module):
-    def __init__(self):
+    def __init__(self, flag=1, dropout=0.5):
         super(ComplexNet, self).__init__()
         self.conv1 = compnn.CVConv2d(3, 10, kernel_size=(5, 5), stride=(1, 1))
         self.relu1 = compnn.CVCardiod()
         self.bn1 = ComplexBatchNorm2d(10)
         self.conv2 = compnn.CVConv2d(10, 20, kernel_size=(5, 5), stride=(1, 1))
         self.bn2 = ComplexBatchNorm2d(20)
-        self.fc1 = compnn.CVLinear(5 * 5 * 20, 50)
+        if flag:
+            self.fc1 = compnn.CVLinear(5 * 5 * 20, 50)
+        else:
+            self.fc1 = compnn.CVLinear(21 * 21 * 20, 50)
         self.dp1 = compnn.CVDropout(p=0.5)
         # self.fc1 = compnn.CVLinear(21 * 21 * 20, 50)
         # self.fc2 = compnn.CVLinear(50, 10)
@@ -34,6 +38,7 @@ class ComplexNet(nn.Module):
         x = x.view(-1, 20 * 5 * 5)
         # x = x.view(-1, 20 * 21 * 21)
         x = self.fc1(x)
+        x = self.dp1(x)
         x = self.relu1(x)
         x = self.fc2(x)
         # x = x.abs()

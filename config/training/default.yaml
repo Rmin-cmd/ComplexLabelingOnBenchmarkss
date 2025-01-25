@@ -1,5 +1,9 @@
 training:
+  base_path: 'E:\datasets'
   epochs: 50
-  learning_rate: 0.00001
-  batch_size: 256
-  beta: 0.5
+  n_trials: 10
+  n_folds: 5
+  color_model: 'iHSV'
+  Tuning: True
+  random_state: 42
+
