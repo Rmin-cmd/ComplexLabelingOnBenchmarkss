@@ -1,3 +1,5 @@
+import os
+
 import hydra
 from omegaconf import OmegaConf,DictConfig
 import torch
@@ -16,6 +18,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 from sklearn.metrics import confusion_matrix
 from tqdm import tqdm
+import os
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -31,7 +34,17 @@ def main(cfg:DictConfig):
 
     if cfg.training.Tuning:
 
-        RESULT_OPTUNA_PATH = fr'optuna_results\nested_cv_{cfg.datasets.name}.sqlite3'
+        optuna_path = os.path.join(os.getcwd(), 'optuna_results')
+
+        try:
+            os.mkdir(optuna_path)
+            RESULT_OPTUNA_PATH = os.path.join(optuna_path, f'nested_cv_{cfg.datasets.name}.sqlite3')
+        except FileExistsError:
+            RESULT_OPTUNA_PATH = os.path.join(optuna_path, f'nested_cv_{cfg.datasets.name}.sqlite3')
+        except Exception as e:
+            raise RuntimeError('Specified Path is not correct.')
+
+        # RESULT_OPTUNA_PATH = fr'C:\Users\alajv\PycharmProjects\ComplexValued_labelencoding\ComplexLabelingOnBenchmarkss\optuna_results\nested_cv_{cfg.datasets.name}.sqlite3'
 
         kf = KFold(n_splits=cfg.training.n_folds, shuffle=True, random_state=cfg.training.random_state)
 
@@ -102,7 +115,7 @@ def main(cfg:DictConfig):
 
                     scheduler.step(out_metrics[3])
 
-                mean_loss.append(best_loss)
+                mean_loss.append(best_loss.item())
                 mean_f1_score.append(best_f1)
 
             return np.mean(mean_loss), np.mean(mean_f1_score)
