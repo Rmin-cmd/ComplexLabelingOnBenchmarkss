@@ -9,10 +9,7 @@ def label_encoding(labels, dataset='CIFAR-10'):
         label_comp = torch.tensor([np.exp(2j * np.pi * (i / 10)) for i in range(10)])
 
     if dataset == 'CIFAR-100':
-        label_comp = torch.tensor([np.exp(2j * np.pi * (i / 10)) for i in range(10)])
-
-        
-
+        label_comp = torch.tensor([np.exp(2j * np.pi * (i / 100)) for i in range(100)])
 
     # label_comp = [np.exp(2j * np.pi * (22.5 / 360)), np.exp(2j * np.pi * (270 / 360)), np.exp(2j * np.pi * (57.5 / 360)),
     #               np.exp(2j * np.pi * (135 / 360)), np.exp(2j * np.pi * (153 / 360)), np.exp(2j * np.pi * (117 / 360)),

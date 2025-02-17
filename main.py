@@ -27,6 +27,8 @@ def main(cfg:DictConfig):
 
     dataset = TrainTestData(dataset_name=cfg.datasets.name, color_model=cfg.training.color_model)
 
+    print(cfg.datasets.name)
+
     train_dataset, test_dataset, classnames = dataset.initial_load_dataset(base_path=cfg.training.base_path, download=True)
 
     metrics = Metrics(num_class=len(classnames))
@@ -46,7 +48,7 @@ def main(cfg:DictConfig):
         kf = KFold(n_splits=cfg.training.n_folds, shuffle=True, random_state=cfg.training.random_state)
 
         study = optuna.create_study(
-            study_name=f'nested_cv_tuning_2_{cfg.datasets.name}',
+            study_name=f'nested_cv_tuning_{cfg.datasets.name}',
             directions=["maximize"],
             storage=f'sqlite:///{RESULT_OPTUNA_PATH}',
             sampler=optuna.samplers.TPESampler(),
@@ -87,7 +89,7 @@ def main(cfg:DictConfig):
 
                 scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
-                train_test_pip = TrainTestPipeline(model, criterion, beta=beta_loss, temperature=temperature,
+                train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=beta_loss, temperature=temperature,
                                                    hsv_ihsv_flag=True)
 
                 best_loss, best_f1, early_stopping = torch.inf, 0, 0
