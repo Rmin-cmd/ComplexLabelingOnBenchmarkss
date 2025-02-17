@@ -40,6 +40,7 @@ def main(cfg:DictConfig):
             directions=["maximize", "minimize"],
             storage=f'sqlite:///{RESULT_OPTUNA_PATH}',
             sampler=optuna.samplers.TPESampler(),
+            load_if_exists=True
         )
 
         def objective(trial: Trial):
