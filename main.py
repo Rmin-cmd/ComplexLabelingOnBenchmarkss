@@ -158,7 +158,7 @@ def main(cfg:DictConfig):
         writer = SummaryWriter(
             log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
 
-        train_test_pip = TrainTestPipeline(model, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
+        train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=True)
 
         conf_mat_epochs = []
