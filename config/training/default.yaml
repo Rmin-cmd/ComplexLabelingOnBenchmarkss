@@ -1,9 +1,9 @@
 # @package _global_
 training:
   base_path: 'E:\datasets'
-  epochs: 1
-  n_trials: 1
-  n_folds: 2
+  epochs: 50
+  n_trials: 10
+  n_folds: 5
   color_model: 'iHSV'
   Tuning: True
   random_state: 42
