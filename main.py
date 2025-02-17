@@ -25,13 +25,13 @@ def main(cfg:DictConfig):
 
     dataset = TrainTestData(dataset_name=cfg.datasets.name, color_model=cfg.training.color_model)
 
-    train_dataset, test_dataset, classnames = dataset.initial_load_dataset(base_path=cfg.training.base_path, download=False)
+    train_dataset, test_dataset, classnames = dataset.initial_load_dataset(base_path=cfg.training.base_path, download=True)
 
     metrics = Metrics(num_class=len(classnames))
 
     if cfg.training.Tuning:
 
-        RESULT_OPTUNA_PATH = fr'C:\Users\alajv\PycharmProjects\ComplexValued_labelencoding\ComplexLabelingOnBenchmarkss\optuna_results\nested_cv_{cfg.datasets.name}.sqlite3'
+        RESULT_OPTUNA_PATH = fr'optuna_results\nested_cv_{cfg.datasets.name}.sqlite3'
 
         kf = KFold(n_splits=cfg.training.n_folds, shuffle=True, random_state=cfg.training.random_state)
 
@@ -122,7 +122,7 @@ def main(cfg:DictConfig):
 
         config_yaml = "# @package _global_\n" + OmegaConf.to_yaml(config)
 
-        with open(fr'C:\Users\alajv\PycharmProjects\ComplexValued_labelencoding\ComplexLabelingOnBenchmarkss\config\datasets\{cfg.datasets.name}.yaml', 'w') as f:
+        with open(fr'config\datasets\{cfg.datasets.name}.yaml', 'w') as f:
             f.write(config_yaml)
 
     else:
@@ -175,7 +175,6 @@ def main(cfg:DictConfig):
             writer.add_scalar("recall/val", out_metrics[1], epoch)
             writer.add_scalar("precision/val", out_metrics[2], epoch)
             writer.add_scalar("F1 Score", out_metrics[3], epoch)
-
 
         fig = show_confusion(np.mean(conf_mat_epochs, axis=0), class_names=classnames, show=False)
 
