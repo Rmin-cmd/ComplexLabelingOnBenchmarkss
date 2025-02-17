@@ -44,13 +44,11 @@ def main(cfg:DictConfig):
         except Exception as e:
             raise RuntimeError('Specified Path is not correct.')
 
-        # RESULT_OPTUNA_PATH = fr'C:\Users\alajv\PycharmProjects\ComplexValued_labelencoding\ComplexLabelingOnBenchmarkss\optuna_results\nested_cv_{cfg.datasets.name}.sqlite3'
-
         kf = KFold(n_splits=cfg.training.n_folds, shuffle=True, random_state=cfg.training.random_state)
 
         study = optuna.create_study(
             study_name=f'nested_cv_tuning_{cfg.datasets.name}',
-            directions=["maximize", "minimize"],
+            directions=["maximize"],
             storage=f'sqlite:///{RESULT_OPTUNA_PATH}',
             sampler=optuna.samplers.TPESampler(),
             load_if_exists=True
@@ -118,7 +116,7 @@ def main(cfg:DictConfig):
                 mean_loss.append(best_loss.item())
                 mean_f1_score.append(best_f1)
 
-            return np.mean(mean_loss), np.mean(mean_f1_score)
+            return np.mean(mean_f1_score)
 
         study.optimize(
             func=objective,
@@ -136,7 +134,9 @@ def main(cfg:DictConfig):
 
         config_yaml = "# @package _global_\n" + OmegaConf.to_yaml(config)
 
-        with open(fr'config\datasets\{cfg.datasets.name}.yaml', 'w') as f:
+        config_dataset_save = os.path.join('config', 'datasets', f'{cfg.datasets.name}.yaml')
+
+        with open(config_dataset_save, 'w') as f:
             f.write(config_yaml)
 
     else:
@@ -154,7 +154,7 @@ def main(cfg:DictConfig):
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
-            log_dir=f"Tensorboard_results/runs_{cfg.datasets.name}")
+            log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=True)
