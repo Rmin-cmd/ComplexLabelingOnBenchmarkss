@@ -1,5 +1,4 @@
 import os
-
 import hydra
 from omegaconf import OmegaConf,DictConfig
 import torch
@@ -18,7 +17,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.tensorboard import SummaryWriter
 from sklearn.metrics import confusion_matrix
 from tqdm import tqdm
-import os
+
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -47,7 +46,7 @@ def main(cfg:DictConfig):
         kf = KFold(n_splits=cfg.training.n_folds, shuffle=True, random_state=cfg.training.random_state)
 
         study = optuna.create_study(
-            study_name=f'nested_cv_tuning_{cfg.datasets.name}',
+            study_name=f'nested_cv_tuning_2_{cfg.datasets.name}',
             directions=["maximize"],
             storage=f'sqlite:///{RESULT_OPTUNA_PATH}',
             sampler=optuna.samplers.TPESampler(),
@@ -127,7 +126,7 @@ def main(cfg:DictConfig):
 
         config = OmegaConf.create({
             "datasets": {
-                "name": {cfg.datasets.name},
+                "name": cfg.datasets.name,
                 **study.best_params
             }
         })
@@ -141,13 +140,14 @@ def main(cfg:DictConfig):
 
     else:
 
-        model = ComplexNet(flag=1, dropout=cfg.datasets.drop_out)
+        model = ComplexNet(flag=1, dropout=cfg.datasets.drop_out).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
         criterion = nn.CrossEntropyLoss()
 
-        train_dataset, valid_dataset = random_split(train_dataset, [0.8 * len(train_dataset), 0.2 * len(train_dataset)])
+        train_dataset, valid_dataset = random_split(train_dataset,
+                                                    [int(0.8 * len(train_dataset)), int(0.2 * len(train_dataset))])
 
         train_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=True)
         valid_loader = DataLoader(valid_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
@@ -161,9 +161,9 @@ def main(cfg:DictConfig):
 
         conf_mat_epochs = []
 
-        for epoch in range(cfg.training.n_epochs):
+        for epoch in tqdm(range(cfg.training.epochs)):
 
-            train_loss, train_correct = train_test_pip.train(train_loader, optimizer)
+            train_loss, train_accuracy = train_test_pip.train(train_loader, optimizer)
 
             loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=valid_loader)
 
@@ -183,7 +183,7 @@ def main(cfg:DictConfig):
             writer.add_scalars('Loss', {'Train': train_loss / len(train_loader),
                                         'Validation': loss_valid / len(valid_loader)}, epoch)
 
-            writer.add_scalars("Accuracy", {'Train': train_correct / len(train_loader.dataset),
+            writer.add_scalars("Accuracy", {'Train': train_accuracy,
                                             'Valid': out_metrics[0]}, epoch)
 
             writer.add_scalar("recall/val", out_metrics[1], epoch)

@@ -1,4 +1,9 @@
 # @package _global_
 datasets:
   name: CIFAR-10
-
+  learning_rate: 0.00047652828505531105
+  l2: 1e-5
+  batch_size: 32
+  drop_out: 0.4
+  beta: 0.36342039414453986
+  temperature: 0.3569361996874511
