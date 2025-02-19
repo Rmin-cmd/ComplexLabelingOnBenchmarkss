@@ -38,11 +38,17 @@ def main(cfg:DictConfig):
         optuna_path = os.path.join(os.getcwd(), 'optuna_results')
 
         try:
+
             os.mkdir(optuna_path)
+
             RESULT_OPTUNA_PATH = os.path.join(optuna_path, f'nested_cv_{cfg.datasets.name}.sqlite3')
+
         except FileExistsError:
+
             RESULT_OPTUNA_PATH = os.path.join(optuna_path, f'nested_cv_{cfg.datasets.name}.sqlite3')
+
         except Exception as e:
+
             raise RuntimeError('Specified Path is not correct.')
 
         kf = KFold(n_splits=cfg.training.n_folds, shuffle=True, random_state=cfg.training.random_state)
@@ -90,7 +96,7 @@ def main(cfg:DictConfig):
                 scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
                 train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=beta_loss, temperature=temperature,
-                                                   hsv_ihsv_flag=True)
+                                                   hsv_ihsv_flag=False)
 
                 best_loss, best_f1, early_stopping = torch.inf, 0, 0
 
@@ -152,7 +158,7 @@ def main(cfg:DictConfig):
                                                     [int(0.8 * len(train_dataset)), int(0.2 * len(train_dataset))])
 
         train_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=True)
-        valid_loader = DataLoader(valid_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
+        valid_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(

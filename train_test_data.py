@@ -2,6 +2,7 @@ import os
 from torchvision import datasets, transforms
 from torch.utils.data import Dataset
 import numpy as np
+import torch
 
 
 def permute_dataset(dataset):
@@ -56,6 +57,20 @@ class PermutedDataset(Dataset):
         return len(self.data)
 
 
+# class RandomCIFAR10(Dataset):
+#     def __init__(self, size, data, targets, num_classes=10):
+#         # self.data = torch.tensor(data, dtype=torch.float32).reshape([size, 3, 32, 32])
+#         self.data = torch.rand((size, 3, 32, 32))  # Random image data
+#         self.labels = targets  # Random labels
+#         # self.labels = torch.randint(0, num_classes, (size,))  # Random labels
+#
+#     def __len__(self):
+#         return len(self.data)
+#
+#     def __getitem__(self, idx):
+#         return self.data[idx], self.labels[idx]
+
+
 class TrainTestData:
 
     def __init__(self, dataset_name: str, color_model: str):
@@ -81,33 +96,39 @@ class TrainTestData:
 
         if self.dataset_name == 'CIFAR-10':
 
-            train_dataset = datasets.CIFAR10(root=os.path.join(base_path, 'data'), train=True, download=download,
+            train_dataset = datasets.CIFAR10(root=os.path.join(base_path, f'{self.dataset_name}'), train=True, download=download,
                                              transform=self.transform())
-            test_dataset = datasets.CIFAR10(root=os.path.join(base_path, 'data'), train=False, download=download,
+            test_dataset = datasets.CIFAR10(root=os.path.join(base_path, f'{self.dataset_name}'), train=False, download=download,
                                             transform=self.transform())
             classnames = train_dataset.classes
 
+            # train_size = 50000
+            # test_size = 10000
+            #
+            # # train_dataset = RandomCIFAR10(train_size, train_dataset.targets)
+            # # test_dataset = RandomCIFAR10(test_size, test_dataset.data, test_dataset.targets)
+
         elif self.dataset_name == 'CIFAR-100':
 
-            train_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=True, download=download,
+            train_dataset = datasets.CIFAR100(root=os.path.join(base_path, f'{self.dataset_name}'), train=True, download=download,
                                               transform=self.transform())
-            test_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=False, download=download,
+            test_dataset = datasets.CIFAR100(root=os.path.join(base_path, f'{self.dataset_name}'), train=False, download=download,
                                              transform=self.transform())
             classnames = train_dataset.classes
 
         elif self.dataset_name == 'SVHN':
 
-            train_dataset = datasets.SVHN(root=os.path.join(base_path, 'data_svhn'), split='train', download=download,
+            train_dataset = datasets.SVHN(root=os.path.join(base_path, f'{self.dataset_name}'), split='train', download=download,
                                           transform=self.transform())
-            test_dataset = datasets.SVHN(root=os.path.join(base_path, 'data_svhn'), split='test', download=download,
+            test_dataset = datasets.SVHN(root=os.path.join(base_path, f'{self.dataset_name}'), split='test', download=download,
                                          transform=self.transform())
             classnames = [str(i) for i in range(10)]
 
         elif self.dataset_name == 'STL-10':
 
-            train_dataset = datasets.STL10(root=os.path.join(base_path, 'data_STL10'), split='train', download=download,
+            train_dataset = datasets.STL10(root=os.path.join(base_path, f'{self.dataset_name}'), split='train', download=download,
                                            transform=self.transform())
-            test_dataset = datasets.STL10(root=os.path.join(base_path, 'data_STL10'), split='test', download=download,
+            test_dataset = datasets.STL10(root=os.path.join(base_path, f'{self.dataset_name}'), split='test', download=download,
                                           transform=self.transform())
 
             classnames = train_dataset.classes
@@ -119,9 +140,9 @@ class TrainTestData:
 
         elif self.dataset_name == 'permuted_CIFAR-100':
 
-            train_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=True, download=download,
+            train_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'CIFAR-100'), train=True, download=download,
                                               transform=self.transform())
-            test_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'data'), train=False, download=download,
+            test_dataset = datasets.CIFAR100(root=os.path.join(base_path, 'CIFAR-100'), train=False, download=download,
                                              transform=self.transform())
 
             classnames = train_dataset.classes
