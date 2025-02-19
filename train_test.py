@@ -23,6 +23,7 @@ class TrainTestPipeline:
         train_loss = 0.0
         total_correct, total_targets = 0, 0
         for inputs, targets in train_loader:
+
             label = label_encoding(targets, dataset=self.dataset_name).to(device)
 
             if self.hsv_ihsv_flag:

@@ -87,7 +87,7 @@ def main(cfg:DictConfig):
                 train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
                 val_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=val_sampler)
 
-                model = ComplexNet(flag=1, dropout=drop_out).to(device)
+                model = ComplexNet(dropout=drop_out, output_neurons=len(classnames)).to(device)
 
                 criterion = nn.CrossEntropyLoss()
 
@@ -158,7 +158,7 @@ def main(cfg:DictConfig):
                                                     [int(0.8 * len(train_dataset)), int(0.2 * len(train_dataset))])
 
         train_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=True)
-        valid_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
+        valid_loader = DataLoader(valid_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
