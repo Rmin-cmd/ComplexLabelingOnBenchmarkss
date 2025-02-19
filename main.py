@@ -148,7 +148,7 @@ def main(cfg:DictConfig):
 
     else:
 
-        model = ComplexNet(flag=1, dropout=cfg.datasets.drop_out).to(device)
+        model = ComplexNet(dropout=cfg.datasets.drop_out).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
