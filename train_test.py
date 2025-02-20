@@ -4,6 +4,7 @@ from utils.utils_loss import loss_function
 from utils.utils_color import ColorModelConverter
 import complextorch
 from torch.utils.data import DataLoader
+import torch.nn as nn
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -39,6 +40,7 @@ class TrainTestPipeline:
             total_correct += torch.sum(predicted_label == target.data).item()
             total_targets += targets.size(0)
             loss.backward()
+            nn.utils.clip_grad_value_(self.model.parameters(), clip_value=0.1)
             optimizer.step()
             train_loss += loss.item()
 

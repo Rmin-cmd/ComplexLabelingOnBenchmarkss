@@ -9,10 +9,14 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def loss_function(loss_func, preds, label_en, targets, temperature=1, beta=0.5):
 
     angs = preds.angle()
+    # angs = preds.real
     label_ang = label_en.angle()
+    # label_ang = label_en.real
 
     abs_lbl = preds.abs()
+    # abs_lbl = preds.imag
     label_abs = label_en.abs()
+    # label_abs = label_en.imag
 
     # label_oh = F.one_hot(labels.long(), num_classes=9).float()
     #

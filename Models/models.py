@@ -1,8 +1,10 @@
 import complextorch.nn as compnn
 import torch.nn as nn
+import torch
 from utils.batch_norm import ComplexBatchNorm2d
 from utils.LazyCVLinear import LazyCVLinear
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class ComplexNet(nn.Module):
     def __init__(self, dropout=0.5, output_neurons=10):
@@ -47,7 +49,7 @@ class ComplexCifarNet(nn.Module):
         super(ComplexCifarNet, self).__init__()
         self.conv1 = compnn.CVConv2d(3, 64, kernel_size=(5, 5), padding=2)
         self.conv2 = compnn.CVConv2d(64, 64, kernel_size=(5, 5), padding=2)
-        self.conv3 = compnn.CVConv2d(64, 128, kernel_size=(5, 5), padding=2)
+        # self.conv3 = compnn.CVConv2d(64, 128, kernel_size=(5, 5), padding=2)
         self.fc1 = LazyCVLinear(384)
         self.fc2 = LazyCVLinear(192)
         self.fc3 = LazyCVLinear(output_neurons)
@@ -59,15 +61,16 @@ class ComplexCifarNet(nn.Module):
         x = self.activation(self.conv1(x))
         mxpool1 = compnn.CVAdaptiveAvgPool2d((x.shape[2] // 2, x.shape[3] // 2))
         x = mxpool1(x)
+        self.lrn1 = compnn.CVLayerNorm(x.shape[-1]).to(device)
+        x = self.lrn1(x)
         x = self.activation(self.conv2(x))
         mxpool2 = compnn.CVAdaptiveAvgPool2d((x.shape[2] // 2, x.shape[3] // 2))
         x = mxpool2(x)
-        x = self.activation(self.conv3(x))
-        mxpool3 = compnn.CVAdaptiveAvgPool2d((x.shape[2] // 2, x.shape[3] // 2))
-        x = mxpool3(x)
+        self.lrn2 = compnn.CVLayerNorm(x.shape[-1]).to(device)
+        x = self.lrn2(x)
         x = x.view(x.size(0), -1)
         x = self.activation(self.fc1(x))
-        x = self.dropout1(x)
+        # x = self.dropout1(x)
         x = self.activation(self.fc2(x))
         x = self.dropout2(x)
         x = self.fc3(x)

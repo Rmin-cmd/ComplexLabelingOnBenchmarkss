@@ -7,8 +7,8 @@ from optuna import Trial
 from sklearn.model_selection import KFold
 import torch.optim as optim
 from Models.models import *
-from Models.networks import *
-from Models.networks_new import *
+# from Models.networks import *
+# from Models.networks_new import *
 import torch.nn as nn
 from train_test import TrainTestPipeline
 from train_test_data import TrainTestData
@@ -153,9 +153,11 @@ def main(cfg: DictConfig):
 
         # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
-        model = ComplexCifarNet(dropout=cfg.datasets.dropout, output_neurons=len(classnames)).to(device)
+        model = ComplexCifarNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
+
+        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
         criterion = nn.CrossEntropyLoss()
 
@@ -163,18 +165,20 @@ def main(cfg: DictConfig):
                                                     [int(0.8 * len(train_dataset)), int(0.2 * len(train_dataset))])
 
         train_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=True)
-        valid_loader = DataLoader(valid_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
+        valid_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
-            log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
+            log_dir=os.path.join('Tensorboard_results', f'runs_2_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=cfg.training.color_model)
 
         conf_mat_epochs = []
 
-        best_acc = 0
+        early_stopping = 0
+
+        best_acc, best_loss = 0, 0
 
         save_path = os.path.join(os.getcwd(), 'saved_models')
 
@@ -197,11 +201,8 @@ def main(cfg: DictConfig):
             out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
                                                   torch.tensor([ground_truth]).to(device))
 
-            if out_metrics[0] > best_acc:
+            scheduler.step(out_metrics[3])
 
-                best_acc = out_metrics[0]
-
-                torch.save(model.state_dict(), MODEL_SAVE_PATH)
 
             outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
                           (epoch, loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
@@ -223,11 +224,23 @@ def main(cfg: DictConfig):
             writer.add_scalar("precision/val", out_metrics[2], epoch)
             writer.add_scalar("F1 Score", out_metrics[3], epoch)
 
+            if loss_valid < best_loss and out_metrics[0] > best_acc:
+                early_stopping = 0
+                best_acc = out_metrics[0]
+                torch.save(model.state_dict(), MODEL_SAVE_PATH)
+            else:
+
+                early_stopping += 1
+
+            if early_stopping > 5:
+                # torch.save(model.state_dict(), log_path + '\\model_latest_fold'+str(fold)+'.t7')
+                break
+
         fig = show_confusion(np.mean(conf_mat_epochs, axis=0), class_names=classnames, show=False)
 
         writer.add_figure("Confusion Matrix", fig)
 
-        model.load_state_dict(torch.load(MODEL_SAVE_PATH, weights_only=True))
+        # model.load_state_dict(torch.load(MODEL_SAVE_PATH, weights_only=True))
 
         loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=test_loader, model=model)
 
