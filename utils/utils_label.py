@@ -5,7 +5,7 @@ import numpy as np
 def label_encoding(labels, dataset='CIFAR-10'):
     label_en = torch.zeros_like(labels).to(torch.complex64)
 
-    if dataset == 'CIFAR-10' or dataset == 'SVHN' or dataset == 'STL-10':
+    if dataset == 'CIFAR-10' or dataset == 'SVHN' or dataset == 'STL10':
         label_comp = torch.tensor([np.exp(2j * np.pi * (i / 10)) for i in range(10)])
 
     if dataset == 'CIFAR-100':

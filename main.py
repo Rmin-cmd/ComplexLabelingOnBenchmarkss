@@ -6,7 +6,9 @@ import optuna
 from optuna import Trial
 from sklearn.model_selection import KFold
 import torch.optim as optim
-from models import ComplexNet
+from Models.models import *
+from Models.networks import *
+from Models.networks_new import *
 import torch.nn as nn
 from train_test import TrainTestPipeline
 from train_test_data import TrainTestData
@@ -87,7 +89,8 @@ def main(cfg: DictConfig):
                 train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
                 val_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=val_sampler)
 
-                model = ComplexNet(dropout=drop_out, output_neurons=len(classnames)).to(device)
+                # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
+                model = ComplexCifarNet(dropout=drop_out, output_neurons=len(classnames)).to(device)
 
                 criterion = nn.CrossEntropyLoss()
 
@@ -148,7 +151,9 @@ def main(cfg: DictConfig):
 
     else:
 
-        model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
+        # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
+
+        model = ComplexCifarNet(dropout=cfg.datasets.dropout, output_neurons=len(classnames)).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
