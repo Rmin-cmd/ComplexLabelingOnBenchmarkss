@@ -1,7 +1,7 @@
 import complextorch.nn as compnn
 import torch.nn as nn
-from ComplexLabelingOnBenchmarkss.utils.batch_norm import ComplexBatchNorm2d
-from ComplexLabelingOnBenchmarkss.utils.LazyCVLinear import LazyCVLinear
+from utils.batch_norm import ComplexBatchNorm2d
+from utils.LazyCVLinear import LazyCVLinear
 
 
 class ComplexNet(nn.Module):
