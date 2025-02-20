@@ -124,7 +124,7 @@ class TrainTestData:
                                          transform=self.transform())
             classnames = [str(i) for i in range(10)]
 
-        elif self.dataset_name == 'STL-10':
+        elif self.dataset_name == 'STL10':
 
             train_dataset = datasets.STL10(root=os.path.join(base_path, f'{self.dataset_name}'), split='train', download=download,
                                            transform=self.transform())

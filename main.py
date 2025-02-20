@@ -171,7 +171,17 @@ def main(cfg: DictConfig):
 
         best_acc = 0
 
-        model_save_path = os.path.join(os.getcwd(), 'saved_models', f'best_model_for_{cfg.datasets.name}.pth')
+        save_path = os.path.join(os.getcwd(), 'saved_models')
+
+        try:
+
+            os.mkdir(save_path)
+
+            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
+
+        except FileExistsError:
+
+            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
 
         for epoch in tqdm(range(cfg.training.epochs)):
 
@@ -184,7 +194,7 @@ def main(cfg: DictConfig):
 
             if out_metrics[0] > best_acc:
 
-                torch.save(model.state_dict(), model_save_path)
+                torch.save(model.state_dict(), MODEL_SAVE_PATH)
 
             outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
                           (epoch, loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
@@ -210,7 +220,7 @@ def main(cfg: DictConfig):
 
         writer.add_figure("Confusion Matrix", fig)
 
-        model.load_state_dict(torch.load(model_save_path, weights_only=True))
+        model.load_state_dict(torch.load(MODEL_SAVE_PATH, weights_only=True))
 
         loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=test_loader, model=model)
 
