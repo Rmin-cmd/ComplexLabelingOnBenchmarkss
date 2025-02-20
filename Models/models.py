@@ -51,7 +51,8 @@ class ComplexCifarNet(nn.Module):
         self.fc1 = LazyCVLinear(384)
         self.fc1 = LazyCVLinear(192)
         self.fc1 = LazyCVLinear(output_neurons)
-        self.dropout = nn.Dropout(dropout)
+        self.dropout1 = compnn.CVDropout(p=dropout)
+        self.dropout2 = compnn.CVDropout(p=dropout)
         self.activation = compnn.CReLU()
 
     def forward(self, x):
@@ -66,9 +67,9 @@ class ComplexCifarNet(nn.Module):
         x = mxpool3(x)
         x = x.view(x.size(0), -1)
         x = self.activation(self.fc1(x))
-        x = self.dropout(x)
+        x = self.dropout1(x)
         x = self.activation(self.fc2(x))
-        x = self.dropout(x)
+        x = self.dropout2(x)
         x = self.fc3(x)
         return x
 
