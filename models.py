@@ -13,14 +13,7 @@ class ComplexNet(nn.Module):
         self.conv2 = compnn.CVConv2d(10, 20, kernel_size=(5, 5), stride=(1, 1))
         self.bn2 = ComplexBatchNorm2d(20)
         self.fc1 = LazyCVLinear(50)
-        # if flag:
-        #     self.fc1 = compnn.CVLinear(5 * 5 * 20, 50)
-        # else:
-        #     self.fc1 = compnn.CVLinear(21 * 21 * 20, 50)
         self.dp1 = compnn.CVDropout(p=dropout)
-        # self.fc1 = compnn.CVLinear(21 * 21 * 20, 50)
-        # self.fc2 = compnn.CVLinear(50, 10)
-        # self.fc2 = compnn.CVLinear(50, 10)
         self.fc2 = LazyCVLinear(output_neurons)
         self.smx = compnn.PhaseSoftMax(dim=1)
 

@@ -42,11 +42,15 @@ class TrainTestPipeline:
             optimizer.step()
             train_loss += loss.item()
 
-        return train_loss/len(train_loader), total_correct/total_targets
+        return train_loss/len(train_loader), total_correct/total_targets, self.model
 
-    def test(self, test_loader:DataLoader):
+    def test(self, test_loader:DataLoader, model=None):
 
-        self.model.eval()
+        if not model:
+
+          model = self.model
+
+        model.eval()
         test_loss = 0
         pred_, label_ = [], []
 
@@ -59,7 +63,7 @@ class TrainTestPipeline:
                 else:
                     inputs, target = complextorch.CVTensor(inputs, i=torch.zeros_like(inputs)).to(device), targets.to(device)
                 # inputs, target = complextorch.CVTensor(inputs, i=inputs).to(device), targets.to(device)
-                outputs = self.model(inputs)
+                outputs = model(inputs)
                 loss, predicted_label, preds = loss_function(self.criterion, outputs, label, target, beta=self.beta,
                                                              temperature= self.temperature)
                 test_loss += loss

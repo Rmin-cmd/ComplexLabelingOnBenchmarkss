@@ -23,7 +23,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 @hydra.main(config_path='config', config_name='config.yaml', version_base=None)
-def main(cfg:DictConfig):
+def main(cfg: DictConfig):
 
     dataset = TrainTestData(dataset_name=cfg.datasets.name, color_model=cfg.training.color_model)
 
@@ -96,13 +96,13 @@ def main(cfg:DictConfig):
                 scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
                 train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=beta_loss, temperature=temperature,
-                                                   hsv_ihsv_flag=False)
+                                                   hsv_ihsv_flag=cfg.training.color_model)
 
                 best_loss, best_f1, early_stopping = torch.inf, 0, 0
 
                 for epoch in tqdm(range(cfg.training.epochs)):
 
-                    _, _ = train_test_pip.train(train_loader, optimizer)
+                    _, _, _ = train_test_pip.train(train_loader, optimizer)
 
                     loss, predicted_labels, ground_truth = train_test_pip.test(test_loader=val_loader)
 
@@ -148,7 +148,7 @@ def main(cfg:DictConfig):
 
     else:
 
-        model = ComplexNet(dropout=cfg.datasets.drop_out).to(device)
+        model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
@@ -165,18 +165,26 @@ def main(cfg:DictConfig):
             log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
-                                           hsv_ihsv_flag=True)
+                                           hsv_ihsv_flag=cfg.training.color_model)
 
         conf_mat_epochs = []
 
+        best_acc = 0
+
+        model_save_path = os.path.join(os.getcwd(), 'saved_models', f'best_model_for_{cfg.datasets.name}.pth')
+
         for epoch in tqdm(range(cfg.training.epochs)):
 
-            train_loss, train_accuracy = train_test_pip.train(train_loader, optimizer)
+            train_loss, train_accuracy, model = train_test_pip.train(train_loader, optimizer)
 
             loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=valid_loader)
 
             out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
                                                   torch.tensor([ground_truth]).to(device))
+
+            if out_metrics[0] > best_acc:
+
+                torch.save(model.state_dict(), model_save_path)
 
             outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
                           (epoch, loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
@@ -202,7 +210,9 @@ def main(cfg:DictConfig):
 
         writer.add_figure("Confusion Matrix", fig)
 
-        loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=test_loader)
+        model.load_state_dict(torch.load(model_save_path, weights_only=True))
+
+        loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=test_loader, model=model)
 
         out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
                                               torch.tensor([ground_truth]).to(device))
