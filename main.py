@@ -199,6 +199,8 @@ def main(cfg: DictConfig):
 
             if out_metrics[0] > best_acc:
 
+                best_acc = out_metrics[0]
+
                 torch.save(model.state_dict(), MODEL_SAVE_PATH)
 
             outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
