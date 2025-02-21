@@ -9,8 +9,8 @@ from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
 from torch import nn
 import torchvision
-import complex_activations as compact
-import complexnn as comp
+import FCCN_model.complex_activations as compact
+import FCCN_model.complexnn as comp
 from einops import rearrange
 
 class ComplexToFloat(nn.Module): 
