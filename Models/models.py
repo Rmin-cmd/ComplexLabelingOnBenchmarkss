@@ -43,36 +43,47 @@ class ComplexNet(nn.Module):
         # out = self.smx(x)
         return x
 
-
+# from https://github.com/gthparch/edgeBench/blob/master/pytorch/models/cifarnet.py
 class ComplexCifarNet(nn.Module):
     def __init__(self, dropout=0.5,  output_neurons=10):
         super(ComplexCifarNet, self).__init__()
         self.conv1 = compnn.CVConv2d(3, 64, kernel_size=(5, 5), padding=2)
         self.conv2 = compnn.CVConv2d(64, 64, kernel_size=(5, 5), padding=2)
+        self.bn1 = ComplexBatchNorm2d(64)
+        self.bn2 = ComplexBatchNorm2d(64)
         # self.conv3 = compnn.CVConv2d(64, 128, kernel_size=(5, 5), padding=2)
         self.fc1 = LazyCVLinear(384)
         self.fc2 = LazyCVLinear(192)
         self.fc3 = LazyCVLinear(output_neurons)
         self.dropout1 = compnn.CVDropout(p=dropout)
         self.dropout2 = compnn.CVDropout(p=dropout)
-        self.activation = compnn.CReLU()
+        self.activation = compnn.CPReLU()
 
     def forward(self, x):
-        x = self.activation(self.conv1(x))
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.activation(x)
+        # x = self.activation(self.bn1(self.conv1(x)))
         mxpool1 = compnn.CVAdaptiveAvgPool2d((x.shape[2] // 2, x.shape[3] // 2))
         x = mxpool1(x)
-        self.lrn1 = compnn.CVLayerNorm(x.shape[-1]).to(device)
-        x = self.lrn1(x)
-        x = self.activation(self.conv2(x))
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.activation(x)
+        # x = self.activation(self.bn2(self.conv2(x)))
         mxpool2 = compnn.CVAdaptiveAvgPool2d((x.shape[2] // 2, x.shape[3] // 2))
         x = mxpool2(x)
-        self.lrn2 = compnn.CVLayerNorm(x.shape[-1]).to(device)
-        x = self.lrn2(x)
+        # self.lrn2 = compnn.CVLayerNorm(x.shape[-1]).to(device)
+        # x = self.lrn2(x)
         x = x.view(x.size(0), -1)
-        x = self.activation(self.fc1(x))
+        x = self.fc1(x)
+        x = self.dropout1(x)
+        x = self.activation(x)
+        # x = self.activation(self.dropout1(self.fc1(x)))
         # x = self.dropout1(x)
-        x = self.activation(self.fc2(x))
+        x = self.fc2(x)
         x = self.dropout2(x)
+        x = self.activation(x)
+        # x = self.activation(self.dropout1(self.fc2(x)))
         x = self.fc3(x)
         return x
 

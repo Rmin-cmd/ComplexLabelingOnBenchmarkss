@@ -9,6 +9,7 @@ import torch.optim as optim
 from Models.models import *
 # from Models.networks import *
 # from Models.networks_new import *
+from Models.FCCN_model import networks as net
 import torch.nn as nn
 from train_test import TrainTestPipeline
 from train_test_data import TrainTestData
@@ -22,6 +23,8 @@ from tqdm import tqdm
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+torch.autograd.set_detect_anomaly(True)
 
 
 @hydra.main(config_path='config', config_name='config.yaml', version_base=None)
@@ -153,7 +156,9 @@ def main(cfg: DictConfig):
 
         # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
-        model = ComplexCifarNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
+        model = net.CDS_E(len(classnames), dropout=cfg.datasets.drop_out).to(device)
+
+        # model = ComplexCifarNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
@@ -169,7 +174,7 @@ def main(cfg: DictConfig):
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
-            log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
+            log_dir=os.path.join('Tensorboard_results', f'runs_2_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=cfg.training.color_model)
@@ -178,7 +183,7 @@ def main(cfg: DictConfig):
 
         early_stopping = 0
 
-        best_acc, best_loss = 0, 0
+        best_acc, best_loss = 0, np.inf
 
         save_path = os.path.join(os.getcwd(), 'saved_models')
 
@@ -232,6 +237,7 @@ def main(cfg: DictConfig):
                 early_stopping += 1
 
             if early_stopping > 5:
+                # pass
                 # torch.save(model.state_dict(), log_path + '\\model_latest_fold'+str(fold)+'.t7')
                 break
 
@@ -239,7 +245,7 @@ def main(cfg: DictConfig):
 
         writer.add_figure("Confusion Matrix", fig)
 
-        # model.load_state_dict(torch.load(MODEL_SAVE_PATH, weights_only=True))
+        model.load_state_dict(torch.load(MODEL_SAVE_PATH))
 
         loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=test_loader, model=model)
 

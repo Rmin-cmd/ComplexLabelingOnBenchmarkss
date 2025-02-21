@@ -21,10 +21,10 @@ This implementation is actually correct and it is an easier way to do things.
 
 
 T = TypeVar('T')
-_scalar_or_tuple_any_t = Union[T, tuple[T, ...]]
-_scalar_or_tuple_1_t = Union[T, tuple[T]]
-_scalar_or_tuple_2_t = Union[T, tuple[T, T]]
-_scalar_or_tuple_3_t = Union[T, tuple[T, T, T]]
+_scalar_or_tuple_any_t = Union[T, Tuple[T, ...]]
+_scalar_or_tuple_1_t = Union[T, Tuple[T]]
+_scalar_or_tuple_2_t = Union[T, Tuple[T, T]]
+_scalar_or_tuple_3_t = Union[T, Tuple[T, T, T]]
 
 # For arguments which respresnt size parameters (eg. kernerl_size, padding)
 _size_any_t = _scalar_or_tuple_any_t[int]

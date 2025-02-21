@@ -83,7 +83,10 @@ class TrainTestData:
 
         transform_list = [
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (1.0,))]
+            transforms.Normalize((0.5,), (1.0,)),
+            transforms.RandomHorizontalFlip(0.5),
+            transforms.RandomRotation(10)
+        ]
 
         if self.color_model in ['HSV', 'iHSV']:
             transform_list.append(transforms.RGB2HSV())  # Note: RGB2HSV may not exist in PyTorch
