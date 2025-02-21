@@ -93,7 +93,8 @@ def main(cfg: DictConfig):
                 val_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=val_sampler)
 
                 # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
-                model = ComplexCifarNet(dropout=drop_out, output_neurons=len(classnames)).to(device)
+                # model = ComplexCifarNet(dropout=drop_out, output_neurons=len(classnames)).to(device)
+                model = net.CDS_E(len(classnames), dropout=cfg.datasets.drop_out).to(device)
 
                 criterion = nn.CrossEntropyLoss()
 
