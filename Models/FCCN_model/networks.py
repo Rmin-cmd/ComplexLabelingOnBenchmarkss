@@ -10,8 +10,8 @@ from typing import Type, Any, Callable, Union, List, Optional
 from torch import Tensor
 from torch import nn
 import torchvision
-import FCCN_model.complex_activations as compact
-import FCCN_model.complexnn as comp
+import Models.FCCN_model.complex_activations as compact
+import Models.FCCN_model.complexnn as comp
 from einops import rearrange
 
 
