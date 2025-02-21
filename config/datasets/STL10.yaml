@@ -1,9 +1,3 @@
 # @package _global_
 datasets:
   name: STL10
-  learning_rate: 0.0025497285407398464
-  l2: 0.01
-  batch_size: 64
-  drop_out: 0.4
-  beta: 0.6533257204762319
-  temperature: 0.5636846683956797
