@@ -94,7 +94,7 @@ def main(cfg: DictConfig):
 
                 # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
                 # model = ComplexCifarNet(dropout=drop_out, output_neurons=len(classnames)).to(device)
-                model = net.CDS_E(len(classnames), dropout=cfg.datasets.drop_out).to(device)
+                model = net.CDS_E(len(classnames), dropout=drop_out).to(device)
 
                 criterion = nn.CrossEntropyLoss()
 
