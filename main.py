@@ -10,6 +10,7 @@ from Models.models import *
 # from Models.networks import *
 # from Models.networks_new import *
 from Models.FCCN_model import networks as net
+# from Models.FCCN_model import model as net_new
 import torch.nn as nn
 from train_test import TrainTestPipeline
 from train_test_data import TrainTestData
@@ -122,6 +123,7 @@ def main(cfg: DictConfig):
                     else:
                         early_stopping += 1
                     if early_stopping > 5:
+
                         # torch.save(model.state_dict(), log_path + '\\model_latest_fold'+str(fold)+'.t7')
                         break
 
@@ -157,13 +159,16 @@ def main(cfg: DictConfig):
 
         # model = ComplexNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
+        # FCCN model
         model = net.CDS_E(len(classnames), dropout=cfg.datasets.drop_out).to(device)
+
+        # model = net_new.CDS_E(dset_type='iHSV', outsize=len(classnames)).to(device)
 
         # model = ComplexCifarNet(dropout=cfg.datasets.drop_out, output_neurons=len(classnames)).to(device)
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
-        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
+        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=10)
 
         criterion = nn.CrossEntropyLoss()
 
@@ -175,76 +180,66 @@ def main(cfg: DictConfig):
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
-            log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
+            log_dir=os.path.join('Tensorboard_results', f'runs_2_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=cfg.training.color_model)
 
-        conf_mat_epochs = []
+        if cfg.training.Training:
 
-        early_stopping = 0
+            conf_mat_epochs = []
 
-        best_acc, best_loss = 0, np.inf
+            early_stopping = 0
 
-        save_path = os.path.join(os.getcwd(), 'saved_models')
+            best_acc, best_loss = 0, np.inf
 
-        try:
+            for epoch in tqdm(range(cfg.training.epochs)):
 
-            os.mkdir(save_path)
+                train_loss, train_accuracy, model = train_test_pip.train(train_loader, optimizer)
 
-            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
+                loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=valid_loader)
 
-        except FileExistsError:
+                out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
+                                                      torch.tensor([ground_truth]).to(device))
 
-            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
+                scheduler.step(out_metrics[3])
 
-        for epoch in tqdm(range(cfg.training.epochs)):
+                outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
+                              (epoch, loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
+                               out_metrics[3])
 
-            train_loss, train_accuracy, model = train_test_pip.train(train_loader, optimizer)
+                print(outstrtrain)
 
-            loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=valid_loader)
+                pred_np, label_np = np.array(torch.tensor(predicted_labels).tolist()), np.array(torch.tensor(ground_truth).tolist())
 
-            out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
-                                                  torch.tensor([ground_truth]).to(device))
+                conf_mat_epochs.append(confusion_matrix(label_np, pred_np))
 
-            scheduler.step(out_metrics[3])
+                writer.add_scalars('Loss', {'Train': train_loss / len(train_loader),
+                                            'Validation': loss_valid / len(valid_loader)}, epoch)
 
-            outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
-                          (epoch, loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
-                           out_metrics[3])
+                writer.add_scalars("Accuracy", {'Train': train_accuracy,
+                                                'Valid': out_metrics[0]}, epoch)
 
-            print(outstrtrain)
+                writer.add_scalar("recall/val", out_metrics[1], epoch)
+                writer.add_scalar("precision/val", out_metrics[2], epoch)
+                writer.add_scalar("F1 Score", out_metrics[3], epoch)
 
-            pred_np, label_np = np.array(torch.tensor(predicted_labels).tolist()), np.array(torch.tensor(ground_truth).tolist())
+                if loss_valid < best_loss and out_metrics[0] > best_acc:
+                    early_stopping = 0
+                    best_acc = out_metrics[0]
+                    torch.save(model.state_dict(), MODEL_SAVE_PATH)
+                else:
 
-            conf_mat_epochs.append(confusion_matrix(label_np, pred_np))
+                    early_stopping += 1
 
-            writer.add_scalars('Loss', {'Train': train_loss / len(train_loader),
-                                        'Validation': loss_valid / len(valid_loader)}, epoch)
+                if early_stopping > 5:
+                    pass
+                    # torch.save(model.state_dict(), log_path + '\\model_latest_fold'+str(fold)+'.t7')
+                    # break
 
-            writer.add_scalars("Accuracy", {'Train': train_accuracy,
-                                            'Valid': out_metrics[0]}, epoch)
+            fig = show_confusion(np.mean(conf_mat_epochs, axis=0), class_names=classnames, show=False)
 
-            writer.add_scalar("recall/val", out_metrics[1], epoch)
-            writer.add_scalar("precision/val", out_metrics[2], epoch)
-            writer.add_scalar("F1 Score", out_metrics[3], epoch)
-
-            if loss_valid < best_loss and out_metrics[0] > best_acc:
-                early_stopping = 0
-                best_acc = out_metrics[0]
-                torch.save(model.state_dict(), MODEL_SAVE_PATH)
-            else:
-
-                early_stopping += 1
-
-            if early_stopping > 5:
-                # pass
-                # torch.save(model.state_dict(), log_path + '\\model_latest_fold'+str(fold)+'.t7')
-                break
-
-        fig = show_confusion(np.mean(conf_mat_epochs, axis=0), class_names=classnames, show=False)
-
-        writer.add_figure("Confusion Matrix", fig)
+            writer.add_figure("Confusion Matrix", fig)
 
         model.load_state_dict(torch.load(MODEL_SAVE_PATH))
 

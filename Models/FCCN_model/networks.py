@@ -1,5 +1,5 @@
 
-# The following functions and classes is adapted from:
+# The following functions and classes are adapted from:
 # Repository: https://github.com/saurabhya/FCCNs
 # File: path/to/original_file.py
 # Commit: 633ca73e46b560bb6c8d5c74ece63c74606f93c9

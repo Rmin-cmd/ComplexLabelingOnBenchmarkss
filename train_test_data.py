@@ -99,9 +99,9 @@ class TrainTestData:
 
         if self.dataset_name == 'CIFAR-10':
 
-            train_dataset = datasets.CIFAR10(root=os.path.join(base_path, f'data_{self.dataset_name}'), train=True, download=download,
+            train_dataset = datasets.CIFAR10(root=os.path.join(base_path, f'{self.dataset_name}'), train=True, download=download,
                                              transform=self.transform())
-            test_dataset = datasets.CIFAR10(root=os.path.join(base_path, f'data_{self.dataset_name}'), train=False, download=download,
+            test_dataset = datasets.CIFAR10(root=os.path.join(base_path, f'{self.dataset_name}'), train=False, download=download,
                                             transform=self.transform())
             classnames = train_dataset.classes
 
