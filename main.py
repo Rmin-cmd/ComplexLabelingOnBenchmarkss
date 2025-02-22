@@ -195,7 +195,7 @@ def main(cfg: DictConfig):
 
         except FileExistsError:
 
-            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_2_for_{cfg.datasets.name}.pth')
+            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
 
         if cfg.training.Training:
 
@@ -245,9 +245,9 @@ def main(cfg: DictConfig):
                     early_stopping += 1
 
                 if early_stopping > 5:
-                    pass
+                    # pass
                     # torch.save(model.state_dict(), log_path + '\\model_latest_fold'+str(fold)+'.t7')
-                    # break
+                    break
 
             fig = show_confusion(np.mean(conf_mat_epochs, axis=0), class_names=classnames, show=False)
 
