@@ -26,7 +26,6 @@ from tqdm import tqdm
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-
 @hydra.main(config_path='config', config_name='config.yaml', version_base=None)
 def main(cfg: DictConfig):
 
