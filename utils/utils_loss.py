@@ -22,10 +22,15 @@ def loss_function(loss_func, preds, label_en, targets, temperature=1, beta=0.5):
     #
     # mse_loss = nn.MSELoss()
 
-    distances_ang = torch.abs(angs - label_ang[:, None].to(device))
-    distances_abs = torch.abs(abs_lbl - label_abs[:, None].to(device))
+    # distances_ang = torch.abs(angs - label_ang[:, None].to(device))
+    # distances_abs = torch.abs(abs_lbl - label_abs[:, None].to(device))
+    epsilon = torch.tensor(10 ** (-6))
+    distances_ang = torch.sqrt(2 * (1 - torch.cos(angs - label_ang[:, None])) + epsilon)
+    distances_abs = torch.sqrt((abs_lbl - label_abs[:, None]) ** 2 + epsilon)
+    # distances_ang = 1 - torch.cos(angs - label_ang[:, None].to(device))
+    # distances_abs = (abs_lbl - label_abs[:, None])**2
     # over_phase.append(len(distances[distances > 2 * torch.pi]))
-    distances_ang = torch.min(distances_ang, 2 * np.pi - distances_ang)
+    # distances_ang = torch.min(distances_ang, 2 * np.pi - distances_ang)
 
     # Apply a negative exponential to convert distances to similarities
     similarities_ang = -distances_ang / temperature  # Control sharpness with temperature

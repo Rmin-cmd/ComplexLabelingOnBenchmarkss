@@ -3,7 +3,7 @@ datasets:
   name: CIFAR-100
   learning_rate: 0.0065104566846837155
   l2: 0.01
-  batch_size: 64
+  batch_size: 256
   drop_out: 0.4
   beta: 0.49174882270170917
   temperature: 0.3610386955615562

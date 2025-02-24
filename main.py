@@ -180,7 +180,7 @@ def main(cfg: DictConfig):
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
-            log_dir=os.path.join('Tensorboard_results', f'runs_{cfg.datasets.name}'))
+            log_dir=os.path.join('Tensorboard_results', f'runs_new_loss_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=cfg.training.color_model)
@@ -191,11 +191,11 @@ def main(cfg: DictConfig):
 
             os.mkdir(save_path)
 
-            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
+            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_new_loss_{cfg.datasets.name}.pth')
 
         except FileExistsError:
 
-            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_{cfg.datasets.name}.pth')
+            MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_new_loss_{cfg.datasets.name}.pth')
 
         if cfg.training.Training:
 

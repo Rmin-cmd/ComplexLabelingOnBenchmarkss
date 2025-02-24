@@ -1,0 +1,17 @@
+datasets:
+  name: CIFAR-100
+  learning_rate: 0.0070272632578007345
+  l2: 0.01
+  batch_size: 64
+  drop_out: 0.2
+  beta: 0.7471615178833841
+  temperature: 0.3743585882975503
+training:
+  base_path: E:\datasets
+  epochs: 50
+  n_trials: 10
+  n_folds: 5
+  color_model: iHSV
+  Tuning: false
+  Training: true
+  random_state: 42

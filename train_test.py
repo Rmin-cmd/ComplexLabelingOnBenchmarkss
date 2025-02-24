@@ -40,7 +40,7 @@ class TrainTestPipeline:
             total_correct += torch.sum(predicted_label == target.data).item()
             total_targets += targets.size(0)
             loss.backward()
-            nn.utils.clip_grad_value_(self.model.parameters(), clip_value=0.1)
+            # nn.utils.clip_grad_value_(self.model.parameters(), clip_value=0.1)
             optimizer.step()
             train_loss += loss.item()
 
