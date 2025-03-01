@@ -30,13 +30,13 @@ class TrainTestPipeline:
             if self.hsv_ihsv_flag:
                 inputs, target = self.converter.convert_hsv_ihsv(inputs, targets)
             else:
-                inputs, target = complextorch.CVTensor(inputs, i=torch.zeros_like(inputs)).to(device), targets.to(
+                inputs, target = complextorch.CVTensor(inputs, i=inputs).to(device), targets.to(
                     device)
 
             optimizer.zero_grad()
             outputs = self.model(inputs)
-            loss, predicted_label, preds = loss_function(self.criterion, outputs, label, target, beta=self.beta,
-                                                         temperature=self.temperature)
+            loss, predicted_label, preds = loss_function(self.criterion, outputs, target, dataset=self.dataset_name,
+                                                         beta=self.beta, temperature=self.temperature)
             total_correct += torch.sum(predicted_label == target.data).item()
             total_targets += targets.size(0)
             loss.backward()
@@ -66,8 +66,8 @@ class TrainTestPipeline:
                     inputs, target = complextorch.CVTensor(inputs, i=torch.zeros_like(inputs)).to(device), targets.to(device)
                 # inputs, target = complextorch.CVTensor(inputs, i=inputs).to(device), targets.to(device)
                 outputs = model(inputs)
-                loss, predicted_label, preds = loss_function(self.criterion, outputs, label, target, beta=self.beta,
-                                                             temperature= self.temperature)
+                loss, predicted_label, preds = loss_function(self.criterion, outputs, target, dataset=self.dataset_name,
+                                                             beta=self.beta, temperature=self.temperature)
                 test_loss += loss
                 # total_correct += torch.sum(predicted_label == target.data).item()
 

@@ -166,7 +166,7 @@ def main(cfg: DictConfig):
 
         optimizer = optim.Adam(model.parameters(), lr=cfg.datasets.learning_rate, weight_decay=cfg.datasets.l2)
 
-        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
+        # scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5)
 
         criterion = nn.CrossEntropyLoss()
 
@@ -174,11 +174,11 @@ def main(cfg: DictConfig):
                                                     [int(0.8 * len(train_dataset)), int(0.2 * len(train_dataset))])
 
         train_loader = DataLoader(train_dataset, batch_size=cfg.datasets.batch_size, shuffle=True)
-        valid_loader = DataLoader(valid_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
+        valid_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=cfg.datasets.batch_size, shuffle=False)
 
         writer = SummaryWriter(
-            log_dir=os.path.join('Tensorboard_results', f'runs_new_loss_{cfg.datasets.name}'))
+            log_dir=os.path.join('Tensorboard_results', f'runs_new_loss_tmp_{cfg.datasets.name}'))
 
         train_test_pip = TrainTestPipeline(model, cfg.datasets.name, criterion, beta=cfg.datasets.beta, temperature=cfg.datasets.temperature,
                                            hsv_ihsv_flag=cfg.training.color_model)
@@ -194,6 +194,7 @@ def main(cfg: DictConfig):
         except FileExistsError:
 
             MODEL_SAVE_PATH = os.path.join(save_path, f'best_model_for_new_loss_{cfg.datasets.name}.pth')
+
 
         if cfg.training.Training:
 
@@ -212,10 +213,10 @@ def main(cfg: DictConfig):
                 out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
                                                       torch.tensor([ground_truth]).to(device))
 
-                scheduler.step(out_metrics[3])
+                # scheduler.step(out_metrics[3])
 
-                outstrtrain = 'epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
-                              (epoch, loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
+                outstrtrain = '\n epoch:%d, Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
+                              (epoch, loss_valid, out_metrics[0], out_metrics[1], out_metrics[2],
                                out_metrics[3])
 
                 print(outstrtrain)
@@ -224,8 +225,8 @@ def main(cfg: DictConfig):
 
                 conf_mat_epochs.append(confusion_matrix(label_np, pred_np))
 
-                writer.add_scalars('Loss', {'Train': train_loss / len(train_loader),
-                                            'Validation': loss_valid / len(valid_loader)}, epoch)
+                writer.add_scalars('Loss', {'Train': train_loss,
+                                            'Validation': loss_valid}, epoch)
 
                 writer.add_scalars("Accuracy", {'Train': train_accuracy,
                                                 'Valid': out_metrics[0]}, epoch)
@@ -253,13 +254,15 @@ def main(cfg: DictConfig):
 
         model.load_state_dict(torch.load(MODEL_SAVE_PATH))
 
+        print(model)
+
         loss_valid, predicted_labels, ground_truth = train_test_pip.test(test_loader=test_loader, model=model)
 
         out_metrics = metrics.compute_metrics(torch.tensor([predicted_labels]).to(device),
                                               torch.tensor([ground_truth]).to(device))
 
         outstrtrain = 'Test Results\n Valid loss: %.6f, accuracy: %.3f, recall:%.3f, precision:%.3f, F1-score:%.3f' % \
-                      (loss_valid / len(valid_loader), out_metrics[0], out_metrics[1], out_metrics[2],
+                      (loss_valid, out_metrics[0], out_metrics[1], out_metrics[2],
                        out_metrics[3])
 
         print(outstrtrain)

@@ -57,18 +57,18 @@ class PermutedDataset(Dataset):
         return len(self.data)
 
 
-# class RandomCIFAR10(Dataset):
-#     def __init__(self, size, data, targets, num_classes=10):
-#         # self.data = torch.tensor(data, dtype=torch.float32).reshape([size, 3, 32, 32])
-#         self.data = torch.rand((size, 3, 32, 32))  # Random image data
-#         self.labels = targets  # Random labels
-#         # self.labels = torch.randint(0, num_classes, (size,))  # Random labels
-#
-#     def __len__(self):
-#         return len(self.data)
-#
-#     def __getitem__(self, idx):
-#         return self.data[idx], self.labels[idx]
+class RandomCIFAR10(Dataset):
+    def __init__(self, size, data, targets, num_classes=10):
+        # self.data = torch.tensor(data, dtype=torch.float32).reshape([size, 3, 32, 32])
+        self.data = torch.randn((size, 3, 32, 32))  # Random image data
+        self.labels = targets  # Random labels
+        # self.labels = torch.randint(0, num_classes, (size,))  # Random labels
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx], self.labels[idx]
 
 
 class TrainTestData:
@@ -83,13 +83,11 @@ class TrainTestData:
 
         transform_list = [
             transforms.ToTensor(),
-            transforms.Normalize((0.5,), (1.0,)),
-            transforms.RandomHorizontalFlip(0.5),
-            transforms.RandomRotation(10)
+            transforms.Normalize((0.0,), (1.0,))
         ]
 
         if self.color_model in ['HSV', 'iHSV']:
-            transform_list.append(transforms.RGB2HSV())  # Note: RGB2HSV may not exist in PyTorch
+            transform_list.append(transforms.RGB2HSV())
         elif self.color_model == 'LAB':
             transform_list.append(transforms.RGB2LAB())
 
@@ -105,11 +103,11 @@ class TrainTestData:
                                             transform=self.transform())
             classnames = train_dataset.classes
 
-            # train_size = 50000
-            # test_size = 10000
-            #
-            # # train_dataset = RandomCIFAR10(train_size, train_dataset.targets)
-            # # test_dataset = RandomCIFAR10(test_size, test_dataset.data, test_dataset.targets)
+            train_size = 50000
+            test_size = 10000
+
+            # train_dataset = RandomCIFAR10(train_size, train_dataset.data, train_dataset.targets)
+            # test_dataset = RandomCIFAR10(test_size, test_dataset.data, test_dataset.targets)
 
         elif self.dataset_name == 'CIFAR-100':
 

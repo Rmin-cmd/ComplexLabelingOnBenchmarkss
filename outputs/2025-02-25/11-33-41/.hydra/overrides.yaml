@@ -1,0 +1,2 @@
+- training.Tuning=False
+- datasets.name=CIFAR-10

@@ -1,0 +1,3 @@
+- training.Tuning=False
+- training.color_model=X
+- datasets.name=CIFAR-10
